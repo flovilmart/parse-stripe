@@ -5,15 +5,15 @@ Access to the [Stripe](https://stripe.com/) [API](https://stripe.com/docs/api).
 
 ## Installation
 
-`npm install stripe`
+copy the stripe.js file from lib/stripe.js in your cloud/ folder to add the module
 
 ## Usage overview
 
 
     var api_key = 'abc';  // secret stripe API key
-    var stripe = require('stripe')(api_key);
+    var Stripe = require("cloud/stripe.js").Stripe(api_key)
 
-    stripe.customers.create(
+    Stripe.customers.create(
        { email: 'foobar@example.org' },
        function(err, customer) {
           if (err) {
@@ -71,18 +71,12 @@ called with an error code (if any) and then the response.
    * `.retrieve(id)` - [retrieve an event](https://stripe.com/docs/api#retrieve_event)
    * `.list()` - [list all events](https://stripe.com/docs/api#list_events)
 
-## TODO
-
-See the [issue tracker](http://github.com/abh/node-stripe).
-
-## Tests
-
-To run the tests, install vows with `npm install vows` and then run
-
-   STRIPE_API=your-test-api-key vows test/*
 
 ## Author
 
+Florent Vilmart (florent@icangowithout.com). 
+
+Base api calls from 
 Ask Bjørn Hansen (ask@develooper.com). Development was sponsored by [YellowBot](http://www.yellowbot.com/).
 
 ## License
