@@ -1,4 +1,4 @@
-# node-stripe
+# parse-stripe
 
 Access to the [Stripe](https://stripe.com/) [API](https://stripe.com/docs/api).
 
