@@ -1,102 +1,173 @@
-# parse-stripe
+# Stripe node.js bindings [![Build Status](https://travis-ci.org/stripe/stripe-node.png?branch=master)](https://travis-ci.org/stripe/stripe-node)
 
-Access to the [Stripe](https://stripe.com/) [API](https://stripe.com/docs/api).
+## Version 2 Update Notice
 
+**[Read about Version 2 here](https://github.com/stripe/stripe-node/wiki/Version-2)** (Released October 18th, 2013)
 
 ## Installation
 
-copy the stripe.js file from lib/stripe.js in your cloud/ folder to add the module
+`npm install stripe`
 
-## Usage overview
+## Documentation
 
+Documentation is available at https://stripe.com/docs/api/node.
 
-    var api_key = 'abc';  // secret stripe API key
-    var Stripe = require("cloud/stripe.js").Stripe(api_key)
+## API Overview
 
-    Stripe.customers.create(
-       { email: 'foobar@example.org' },
-       function(err, customer) {
-          if (err) {
-             console.log("Couldn't create the customer record");
-             return;
-          }
-          console.log("customer id", customer.id);
-       }
-     );
+Every resource is accessed via your `stripe` instance:
 
+```js
+var stripe = require('stripe')(' your stripe API key ');
+// stripe.{ RESOURCE_NAME }.{ METHOD_NAME }
+```
 
-## API
+Every resource method accepts an optional callback as the last argument:
 
-All methods takes a callback as their last parameter. The callback is
-called with an error code (if any) and then the response.
+```js
+stripe.customers.create(
+  { email: 'customer@example.com' },
+  function(err, customer) {
+    err; // null if no error occurred
+    customer; // the created customer object
+  }
+);
+```
 
-* `stripe.charges` - create, retrieve, refund and list charges
-   * `.create(charge)` - [create a charge](https://stripe.com/docs/api#create_charge)
-   * `.retrieve(charge_id)` - [retrieve a charge](https://stripe.com/docs/api#retrieve_charge) by charge id
-   * `.refund(charge_id, amount)` - [refund a given charge](https://stripe.com/docs/api#refund_charge), amount in cents
-   * `.list(data)` - [list charges](https://stripe.com/docs/api#list_charges)
-* `stripe.customers` - create, retrieve, update, delete and list customers
-   * `.create(customer)` - [create a customer](https://stripe.com/docs/api#create_customer), takes the data as an object
-   * `.retrieve(customer_id)` - [retrieve a customer](https://stripe.com/docs/api#retrieve_customer) by customer id.
-   * `.update(customer_id, updates)` - [update a customer](https://stripe.com/docs/api#update_customer); `updates` is an object with new parameters
-   * `.del(customer_id)` - [delete a customer](https://stripe.com/docs/api#delete_customer)
-   * `.list(count, offset)` - [list customers](https://stripe.com/docs/api#list_customers)
-   * `.update_subscription(customer_id, data)` - [update subscription](https://stripe.com/docs/api#update_subscription)
-   * `.cancel_subscription(customer_id, at_period_end)` - [cancel subscription](https://stripe.com/docs/api#cancel_subscription)
-* `stripe.plans` - create, retrieve, delete and list subscription plans
-   * `.create(plan)` - [create a plan](https://stripe.com/docs/api#create_plan), takes the data as an object
-   * `.retrieve(plan_id)` - [retrieve a plan](https://stripe.com/docs/api#retrieve_plan) by plan id.
-   * `.update(plan_id, data)` - [update plan](https://stripe.com/docs/api#update_plan)
-   * `.del(plan_id)` - [delete a plan](https://stripe.com/docs/api#delete_plan)
-   * `.list(count, offset)` - [list plans](https://stripe.com/docs/api#list_plans)
-* `stripe.invoices` - [Invoices API](https://stripe.com/docs/api#invoices)
-   * `.retrieve(invoice_id)` - [retrieve an existing invoice](https://stripe.com/docs/api?lang=curl#retrieve_invoice)
-   * `.upcoming(customer_id)` - [retrieve the upcoming invoice for a customer](https://stripe.com/docs/api?lang=curl#retrieve_customer_invoice)
-   * `.list(parameters)` - [list invoices](https://stripe.com/docs/api#list_customer_invoices)
-* `stripe.invoice_items` - create, retrieve, update, delete and list invoice items
-   * `.create(invoice_item)` - [create a invoice item](https://stripe.com/docs/api#create_invoiceitem), takes the data as an object
-   * `.retrieve(invoice_item_id)` - [retrieve a invoice item](https://stripe.com/docs/api#retrieve_invoiceitem) by invoice item id.
-   * `.update(invoice_item_id, updates)` - [update a invoice item](https://stripe.com/docs/api#update_invoiceitem); `updates` is an object with new parameters
-   * `.del(invoice_item_id)` - [delete a invoice item](https://stripe.com/docs/api#delete_invoiceitem)
-   * `.list(customer_id, count, offset)` - [list invoice items](https://stripe.com/docs/api#list_invoiceitems); all parameters are optional
-* `stripe.coupons` - create, retrieve, delete and list coupons
-   * `.create(coupon)` - [create a coupon](https://stripe.com/docs/api#create_coupon), takes the data as an object
-   * `.retrieve(coupon_id)` - [retrieve a coupon](https://stripe.com/docs/api#retrieve_coupon) by coupon id.
-   * `.del(coupon_id)` - [delete a coupon](https://stripe.com/docs/api#delete_coupon)
-   * `.list(count, offset)` - [list coupons](https://stripe.com/docs/api#list_coupons)
-* `stripe.token` - [Tokens API](https://stripe.com/docs/api#tokens)
-   * `.create(card_data)` - [create a token](https://stripe.com/docs/api#create_token)
-   * `.retrieve(token_id)` - [retrieve a card token](https://stripe.com/docs/api#retrieve_token)
-* `stripe.events` - retrieve and list events
-   * `.retrieve(id)` - [retrieve an event](https://stripe.com/docs/api#retrieve_event)
-   * `.list()` - [list all events](https://stripe.com/docs/api#list_events)
+Additionally, every resource method returns a promise, so you don't have to use the regular callback. E.g.
 
+```js
+// Create a new customer and then a new charge for that customer:
+stripe.customers.create({
+  email: 'foo-customer@example.com'
+}).then(function(customer) {
+  return stripe.charges.create({
+    amount: 1600,
+    currency: 'usd',
+    customer: customer.id
+  });
+}).then(function(charge) {
+  // New charge created on a new customer
+}, function(err) {
+  // Deal with an error
+});
+```
+
+### Available resources & methods
+
+*Where you see `params` it is a plain JavaScript object, e.g. `{ email: 'foo@example.com' }`*
+
+ * account
+  * [`retrieve()`](https://stripe.com/docs/api/node#retrieve_account)
+ * balance
+  * [`retrieve()`](https://stripe.com/docs/api/node#retrieve_balance)
+  * [`listTransactions([params])`](https://stripe.com/docs/api/node#balance_history)
+  * [`retrieveTransaction(transactionId)`](https://stripe.com/docs/api/node#retrieve_balance_transaction)
+ * charges
+  * [`create(params)`](https://stripe.com/docs/api/node#create_charge)
+  * [`list([params])`](https://stripe.com/docs/api/node#list_charges)
+  * [`retrieve(chargeId)`](https://stripe.com/docs/api/node#retrieve_charge)
+  * [`capture(chargeId[, params])`](https://stripe.com/docs/api/node#charge_capture)
+  * [`refund(chargeId[, params])`](https://stripe.com/docs/api/node#refund_charge)
+  * [`update(chargeId[, params])`](https://stripe.com/docs/api/node#update_charge)
+  * [`updateDispute(chargeId[, params])`](https://stripe.com/docs/api/node#update_dispute)
+  * [`closeDispute(chargeId[, params])`](https://stripe.com/docs/api/node#close_dispute)
+  * `setMetadata(chargeId, metadataObject)` ([metadata info](https://stripe.com/docs/api/node#metadata))
+  * `setMetadata(chargeId, key, value)`
+  * `getMetadata(chargeId)`
+ * coupons
+  * [`create(params)`](https://stripe.com/docs/api/node#create_coupon)
+  * [`list([params])`](https://stripe.com/docs/api/node#list_coupons)
+  * [`retrieve(chargeId)`](https://stripe.com/docs/api/node#retrieve_coupon)
+  * [`del(chargeId)`](https://stripe.com/docs/api/node#delete_coupon)
+ * customers
+  * [`create(params)`](https://stripe.com/docs/api/node#create_customer)
+  * [`list([params])`](https://stripe.com/docs/api/node#list_customers)
+  * [`update(customerId[, params])`](https://stripe.com/docs/api/node#update_customer)
+  * [`retrieve(customerId)`](https://stripe.com/docs/api/node#retrieve_customer)
+  * [`del(customerId)`](https://stripe.com/docs/api/node#delete_customer)
+  * `setMetadata(customerId, metadataObject)` ([metadata info](https://stripe.com/docs/api/node#metadata))
+  * `setMetadata(customerId, key, value)`
+  * `getMetadata(customerId)`
+  * [`updateSubscription(customerId, subscriptionId, [, params])`](https://stripe.com/docs/api/node#update_subscription)
+  * [`cancelSubscription(customerId, subscriptionId, [, params])`](https://stripe.com/docs/api/node#cancel_subscription)
+  * [`createCard(customerId[, params])`](https://stripe.com/docs/api/node#create_card)
+  * [`listCards(customerId)`](https://stripe.com/docs/api/node#list_cards)
+  * [`retrieveCard(customerId, cardId)`](https://stripe.com/docs/api/node#retrieve_card)
+  * [`updateCard(customerId, cardId[, params])`](https://stripe.com/docs/api/node#update_card)
+  * [`deleteCard(customerId, cardId)`](https://stripe.com/docs/api/node#delete_card)
+  * [`deleteDiscount(customerId)`](https://stripe.com/docs/api/node#delete_discount)
+ * events (*[types of events](https://stripe.com/docs/api/node#event_types)*)
+  * [`list([params])`](https://stripe.com/docs/api/node#list_events)
+  * [`retrieve(eventId)`](https://stripe.com/docs/api/node#retrieve_event)
+ * invoiceItems
+  * [`create(params)`](https://stripe.com/docs/api/node#create_invoiceitem)
+  * [`list([params])`](https://stripe.com/docs/api/node#list_invoiceitems)
+  * [`update(invoiceItemId[, params])`](https://stripe.com/docs/api/node#update_invoiceitem)
+  * [`retrieve(invoiceItemId)`](https://stripe.com/docs/api/node#retrieve_invoiceitem)
+  * [`del(invoiceItemId)`](https://stripe.com/docs/api/node#delete_invoiceitem)
+ * invoices
+  * [`create(params)`](https://stripe.com/docs/api/node#create_invoice)
+  * [`list([params])`](https://stripe.com/docs/api/node#list_customer_invoices)
+  * [`update(invoiceId[, params])`](https://stripe.com/docs/api/node#update_invoice)
+  * [`retrieve(invoiceId)`](https://stripe.com/docs/api/node#retrieve_invoice)
+  * [`retrieveLines(invoiceId)`](https://stripe.com/docs/api/node#invoice_lines)
+  * [`retrieveUpcoming(customerId)`](https://stripe.com/docs/api/node#retrieve_customer_invoice)
+  * [`pay(invoiceId)`](https://stripe.com/docs/api/node#pay_invoice)
+ * plans
+  * [`create(params)`](https://stripe.com/docs/api/node#create_plan)
+  * [`list([params])`](https://stripe.com/docs/api/node#list_plans)
+  * [`update(planId[, params])`](https://stripe.com/docs/api/node#update_plan)
+  * [`retrieve(planId)`](https://stripe.com/docs/api/node#retrieve_plan)
+  * [`del(planId)`](https://stripe.com/docs/api/node#delete_plan)
+ * recipient
+  * [`create(params)`](https://stripe.com/docs/api/node#create_recipient)
+  * [`list([params])`](https://stripe.com/docs/api/node#list_recipients)
+  * [`update(recipientId[, params])`](https://stripe.com/docs/api/node#update_recipient)
+  * [`retrieve(recipientId)`](https://stripe.com/docs/api/node#retrieve_recipient)
+  * [`del(recipientId)`](https://stripe.com/docs/api/node#delete_recipient)
+  * `setMetadata(recipientId, metadataObject)` ([metadata info](https://stripe.com/docs/api/node#metadata))
+  * `setMetadata(recipientId, key, value)`
+  * `getMetadata(recipientId)`
+ * tokens
+  * [`create(params)`](https://stripe.com/docs/api/node#create_card_token)
+  * [`retrieve(tokenId)`](https://stripe.com/docs/api/node#retrieve_token)
+ * transfers
+  * [`create(params)`](https://stripe.com/docs/api/node#create_transfer)
+  * [`list([params])`](https://stripe.com/docs/api/node#list_transfers)
+  * [`retrieve(transferId)`](https://stripe.com/docs/api/node#retrieve_transfer)
+  * [`update(transferId[, params])`](https://stripe.com/docs/api/node#update_transfer)
+  * [`cancel(transferId)`](https://stripe.com/docs/api/node#cancel_transfer)
+  * [`listTransactions(transferId[, params])`](https://stripe.com/docs/api/curl#list_transfers)
+  * `setMetadata(transferId, metadataObject)` ([metadata info](https://stripe.com/docs/api/node#metadata))
+  * `setMetadata(transferId, key, value)`
+  * `getMetadata(transferId)`
+
+## Configuration
+
+ * `stripe.setApiKey(' your secret api key ');`
+ * `stripe.setTimeout(20000); // in ms` (default is node's default: `120000ms`)
+
+## More information / wikis
+
+ * **[In-depth Documentation](https://stripe.com/docs/api/node)**
+ * [Version 2 Overview](https://github.com/stripe/stripe-node/wiki/Version-2)
+ * [REST API Version](https://github.com/stripe/stripe-node/wiki/REST-API-Version)
+ * [Error Handling](https://github.com/stripe/stripe-node/wiki/Error-Handling)
+ * [Using Stripe Connect](https://github.com/stripe/stripe-node/wiki/Using-Stripe-Connect-with-node.js)
+
+## Development
+
+To run the tests you'll need a Stripe *Test* API key (from your [Stripe Dashboard](https://manage.stripe.com)):
+
+```bash
+$ npm install -g mocha
+$ npm test
+```
+
+*Note: On Windows use `SET` isntead of `export` for setting the `STRIPE_TEST_API_KEY` environment variable.*
+
+If you don't have a prefixed key (in the form `sk_test_...`) you can get one by rolling your "Test Secret Key". This can be done under your dashboard (*Account Setting -> API Keys -> Click the roll icon next to the "test secret key"*). This should give you a new prefixed key ('sk_test_..'), which will then be usable by the node mocha tests.
 
 ## Author
 
-Florent Vilmart (florent@icangowithout.com). 
-
-Base api calls from 
-Ask Bjørn Hansen (ask@develooper.com). Development was sponsored by [YellowBot](http://www.yellowbot.com/).
-
-## License
-
-Copyright (C) 2011 Ask Bjørn Hansen
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+Originally by [Ask Bjørn Hansen](https://github.com/abh) (ask@develooper.com). Development was sponsored by YellowBot. Now officially maintained by Stripe.

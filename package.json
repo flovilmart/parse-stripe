@@ -1,0 +1,34 @@
+{
+  "name": "stripe",
+  "version": "2.5.0",
+  "description": "Stripe API wrapper",
+  "homepage": "https://github.com/flovilmart/parse-stripe",
+  "author": "Florent Vilmart <flovilmart@icloud.com> / Stripe <james@stripe.com> (https://stripe.com/)",
+  "contributors": [
+    "Ask Bjørn Hansen <ask@develooper.com> (http://www.askask.com/)",
+    "Michelle Bu <michelle@stripe.com>",
+    "Alex Sexton <alex@stripe.com>",
+    "James Padolsey <james@stripe.com>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/flovilmart/parse-stripe.git"
+  },
+  "bugs:": "https://github.com/flovilmart/parse-stripe/issues",
+  "engines": {
+    "node": ">= v0.8.0"
+  },
+  "main": "lib/stripe.js",
+  "devDependencies": {
+    "mocha": "~1.13.0",
+    "chai": "~1.8.0",
+    "chai-as-promised": "~4.0.0",
+    "mocha-as-promised": "~1.4.0"
+  },
+  "dependencies": {
+    "when": "~2.4.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  }
+}
