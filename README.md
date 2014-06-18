@@ -1,12 +1,9 @@
-# Stripe node.js bindings [![Build Status](https://travis-ci.org/stripe/stripe-node.png?branch=master)](https://travis-ci.org/stripe/stripe-node)
-
-## Version 2 Update Notice
-
-**[Read about Version 2 here](https://github.com/stripe/stripe-node/wiki/Version-2)** (Released October 18th, 2013)
+# Parse/Stripe node.js bindings
 
 ## Installation
+You should use only that module through parse-develop local environment
 
-`npm install stripe`
+`npm install parse-develop`
 
 ## Documentation
 
@@ -17,30 +14,20 @@ Documentation is available at https://stripe.com/docs/api/node.
 Every resource is accessed via your `stripe` instance:
 
 ```js
-var stripe = require('stripe')(' your stripe API key ');
-// stripe.{ RESOURCE_NAME }.{ METHOD_NAME }
+var Stripe = require("stripe");
+Stripe.initialize('YOUR API KEY');
+// Stripe.{ RESOURCE_NAME }.{ METHOD_NAME }
 ```
 
-Every resource method accepts an optional callback as the last argument:
 
-```js
-stripe.customers.create(
-  { email: 'customer@example.com' },
-  function(err, customer) {
-    err; // null if no error occurred
-    customer; // the created customer object
-  }
-);
-```
-
-Additionally, every resource method returns a promise, so you don't have to use the regular callback. E.g.
+Every resource method returns a promise, so you don't have to use a regular callback. E.g.
 
 ```js
 // Create a new customer and then a new charge for that customer:
-stripe.customers.create({
+Stripe.Customers.create({
   email: 'foo-customer@example.com'
 }).then(function(customer) {
-  return stripe.charges.create({
+  return Stripe.Charges.create({
     amount: 1600,
     currency: 'usd',
     customer: customer.id
@@ -56,13 +43,13 @@ stripe.customers.create({
 
 *Where you see `params` it is a plain JavaScript object, e.g. `{ email: 'foo@example.com' }`*
 
- * account
+ * Account
   * [`retrieve()`](https://stripe.com/docs/api/node#retrieve_account)
- * balance
+ * Balance
   * [`retrieve()`](https://stripe.com/docs/api/node#retrieve_balance)
   * [`listTransactions([params])`](https://stripe.com/docs/api/node#balance_history)
   * [`retrieveTransaction(transactionId)`](https://stripe.com/docs/api/node#retrieve_balance_transaction)
- * charges
+ * Charges
   * [`create(params)`](https://stripe.com/docs/api/node#create_charge)
   * [`list([params])`](https://stripe.com/docs/api/node#list_charges)
   * [`retrieve(chargeId)`](https://stripe.com/docs/api/node#retrieve_charge)
@@ -74,12 +61,12 @@ stripe.customers.create({
   * `setMetadata(chargeId, metadataObject)` ([metadata info](https://stripe.com/docs/api/node#metadata))
   * `setMetadata(chargeId, key, value)`
   * `getMetadata(chargeId)`
- * coupons
+ * Coupons
   * [`create(params)`](https://stripe.com/docs/api/node#create_coupon)
   * [`list([params])`](https://stripe.com/docs/api/node#list_coupons)
   * [`retrieve(chargeId)`](https://stripe.com/docs/api/node#retrieve_coupon)
   * [`del(chargeId)`](https://stripe.com/docs/api/node#delete_coupon)
- * customers
+ * Customers
   * [`create(params)`](https://stripe.com/docs/api/node#create_customer)
   * [`list([params])`](https://stripe.com/docs/api/node#list_customers)
   * [`update(customerId[, params])`](https://stripe.com/docs/api/node#update_customer)
@@ -96,16 +83,16 @@ stripe.customers.create({
   * [`updateCard(customerId, cardId[, params])`](https://stripe.com/docs/api/node#update_card)
   * [`deleteCard(customerId, cardId)`](https://stripe.com/docs/api/node#delete_card)
   * [`deleteDiscount(customerId)`](https://stripe.com/docs/api/node#delete_discount)
- * events (*[types of events](https://stripe.com/docs/api/node#event_types)*)
+ * Events (*[types of events](https://stripe.com/docs/api/node#event_types)*)
   * [`list([params])`](https://stripe.com/docs/api/node#list_events)
   * [`retrieve(eventId)`](https://stripe.com/docs/api/node#retrieve_event)
- * invoiceItems
+ * InvoiceItems
   * [`create(params)`](https://stripe.com/docs/api/node#create_invoiceitem)
   * [`list([params])`](https://stripe.com/docs/api/node#list_invoiceitems)
   * [`update(invoiceItemId[, params])`](https://stripe.com/docs/api/node#update_invoiceitem)
   * [`retrieve(invoiceItemId)`](https://stripe.com/docs/api/node#retrieve_invoiceitem)
   * [`del(invoiceItemId)`](https://stripe.com/docs/api/node#delete_invoiceitem)
- * invoices
+ * Invoices
   * [`create(params)`](https://stripe.com/docs/api/node#create_invoice)
   * [`list([params])`](https://stripe.com/docs/api/node#list_customer_invoices)
   * [`update(invoiceId[, params])`](https://stripe.com/docs/api/node#update_invoice)
@@ -113,13 +100,13 @@ stripe.customers.create({
   * [`retrieveLines(invoiceId)`](https://stripe.com/docs/api/node#invoice_lines)
   * [`retrieveUpcoming(customerId)`](https://stripe.com/docs/api/node#retrieve_customer_invoice)
   * [`pay(invoiceId)`](https://stripe.com/docs/api/node#pay_invoice)
- * plans
+ * Plans
   * [`create(params)`](https://stripe.com/docs/api/node#create_plan)
   * [`list([params])`](https://stripe.com/docs/api/node#list_plans)
   * [`update(planId[, params])`](https://stripe.com/docs/api/node#update_plan)
   * [`retrieve(planId)`](https://stripe.com/docs/api/node#retrieve_plan)
   * [`del(planId)`](https://stripe.com/docs/api/node#delete_plan)
- * recipient
+ * Recipient
   * [`create(params)`](https://stripe.com/docs/api/node#create_recipient)
   * [`list([params])`](https://stripe.com/docs/api/node#list_recipients)
   * [`update(recipientId[, params])`](https://stripe.com/docs/api/node#update_recipient)
@@ -128,10 +115,10 @@ stripe.customers.create({
   * `setMetadata(recipientId, metadataObject)` ([metadata info](https://stripe.com/docs/api/node#metadata))
   * `setMetadata(recipientId, key, value)`
   * `getMetadata(recipientId)`
- * tokens
+ * Tokens
   * [`create(params)`](https://stripe.com/docs/api/node#create_card_token)
   * [`retrieve(tokenId)`](https://stripe.com/docs/api/node#retrieve_token)
- * transfers
+ * Transfers
   * [`create(params)`](https://stripe.com/docs/api/node#create_transfer)
   * [`list([params])`](https://stripe.com/docs/api/node#list_transfers)
   * [`retrieve(transferId)`](https://stripe.com/docs/api/node#retrieve_transfer)
@@ -142,10 +129,6 @@ stripe.customers.create({
   * `setMetadata(transferId, key, value)`
   * `getMetadata(transferId)`
 
-## Configuration
-
- * `stripe.setApiKey(' your secret api key ');`
- * `stripe.setTimeout(20000); // in ms` (default is node's default: `120000ms`)
 
 ## More information / wikis
 
@@ -155,19 +138,7 @@ stripe.customers.create({
  * [Error Handling](https://github.com/stripe/stripe-node/wiki/Error-Handling)
  * [Using Stripe Connect](https://github.com/stripe/stripe-node/wiki/Using-Stripe-Connect-with-node.js)
 
-## Development
-
-To run the tests you'll need a Stripe *Test* API key (from your [Stripe Dashboard](https://manage.stripe.com)):
-
-```bash
-$ npm install -g mocha
-$ npm test
-```
-
-*Note: On Windows use `SET` isntead of `export` for setting the `STRIPE_TEST_API_KEY` environment variable.*
-
-If you don't have a prefixed key (in the form `sk_test_...`) you can get one by rolling your "Test Secret Key". This can be done under your dashboard (*Account Setting -> API Keys -> Click the roll icon next to the "test secret key"*). This should give you a new prefixed key ('sk_test_..'), which will then be usable by the node mocha tests.
 
 ## Author
 
-Originally by [Ask Bjørn Hansen](https://github.com/abh) (ask@develooper.com). Development was sponsored by YellowBot. Now officially maintained by Stripe.
+Originally by Stripe and [Ask Bjørn Hansen](https://github.com/abh) (ask@develooper.com). Development was sponsored by YellowBot. Unofficial port from Stripe to Parse
