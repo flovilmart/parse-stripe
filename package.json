@@ -1,6 +1,6 @@
 {
   "name": "stripe",
-  "version": "2.5.0",
+  "version": "2.5.0-parse",
   "description": "Stripe API wrapper",
   "homepage": "https://github.com/flovilmart/parse-stripe",
   "author": "Florent Vilmart <flovilmart@icloud.com> / Stripe <james@stripe.com> (https://stripe.com/)",
